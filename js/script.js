@@ -12,14 +12,17 @@ Paramètres :
 
 const renderer = new THREE.WebGLRenderer();
 
+const ratio = 5;
 
-renderer.setSize(window.innerWidth / 10, window.innerHeight / 10);
+renderer.setSize(window.innerWidth / ratio, window.innerHeight / ratio);
 
 renderer.setPixelRatio(window.devicePixelRatio);
 
 renderer.domElement.style.width = '100%';
 renderer.domElement.style.height = '100vh';
 document.body.appendChild(renderer.domElement);//Permet de visualiser le rendu sur la page.
+
+
 
 const geometry = new THREE.BoxGeometry(3, 2, 2);//crée l'objet
 const material = new THREE.MeshPhongMaterial({color: 0x53687E}); //Lui ajoute un material
@@ -48,10 +51,23 @@ camera.position.z = 5;
 camera.position.x = 0;
 camera.position.y = 0;
 
+const hudGeometry = new THREE.CircleGeometry(0.01,32);
+const hudMaterial = new THREE.MeshBasicMaterial({color : 0xFFCAB1});
+const hud = new THREE.Mesh(hudGeometry, hudMaterial);
+
+camera.add(hud);
+hud.position.set(0,0,-1);
+scene.add(camera);
+
+
 
 function animate() {
-    requestAnimationFrame(animate);
     renderer.render(scene, camera);
+    
+    requestAnimationFrame(animate);
+    
+    
+    
 }
 
 const SENSITIVITY = -3;
@@ -61,14 +77,13 @@ let scale = 1;
 
 camera.rotation.order = "YXZ";
 
+document.addEventListener("click", ()=>{
+    renderer.domElement.requestPointerLock();
+})
+
 document.addEventListener("mousemove", (event) => {
-
-    mouseX = -(event.clientX / renderer.domElement.clientWidth) * Math.PI * 2 + Math.PI;
-    mouseY = -(event.clientY / renderer.domElement.clientHeight) * 4 + 2;
-
-
-    console.log(Math.sin(mouseY));
-
+    mouseX-=event.movementX*0.005;
+    mouseY-=event.movementY*0.005;
     camera.rotation.x = mouseY / scale;
     camera.rotation.y = mouseX / scale;
 
