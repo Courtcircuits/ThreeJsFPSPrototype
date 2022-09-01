@@ -31,11 +31,19 @@ const materialWithoutLight = new THREE.MeshPhongMaterial({color: 0x53687E, side:
 const cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
 
-const color = 0xF5DDDD;
-const intensity = 1;
-const light = new THREE.DirectionalLight(color, intensity);
-light.position.set(-1, 2, 4);
-scene.add(light);
+const cube2 = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), material);
+scene.add(cube2);
+cube2.position.set(2,4,3);
+
+const color = 0x404040;
+const intensity = 2;
+//const light = new THREE.DirectionalLight(color, intensity);
+const ambientLight = new THREE.AmbientLight(color, intensity);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(color, 1);
+scene.add(directionalLight);
+directionalLight.position.set(1,4,2);
 
 const width = 9;  // ui: width
 const height = 9;  // ui: height
@@ -47,33 +55,35 @@ sol.rotation.x = 1.5;
 scene.add(sol);
 
 
-camera.position.z = 5;
-camera.position.x = 0;
-camera.position.y = 0;
+camera.position.set(0,0,2);
 
 const hudGeometry = new THREE.CircleGeometry(0.01,32);
 const hudMaterial = new THREE.MeshBasicMaterial({color : 0xFFCAB1});
 const hud = new THREE.Mesh(hudGeometry, hudMaterial);
 
+const armGeometry = new THREE.BoxGeometry(0.25,0.25,0.5);
+const armMaterial = new THREE.MeshPhongMaterial({color : 0xF5D3C8});
+const arm = new THREE.Mesh(armGeometry, armMaterial);
+
+camera.add(arm);
 camera.add(hud);
 hud.position.set(0,0,-1);
+arm.position.set(-0.5,-0.5,-0.4);
+arm.rotateZ(1);
 scene.add(camera);
-
+scene.background = new THREE.Color(0xDA667B);
 
 
 function animate() {
     renderer.render(scene, camera);
-    
     requestAnimationFrame(animate);
-    
-    
-    
 }
 
-const SENSITIVITY = -3;
+const SENSITIVITY = 0.005;
 let mouseX = 0;
 let mouseY = 0;
 let scale = 1;
+let compensation = 0;
 
 camera.rotation.order = "YXZ";
 
@@ -81,12 +91,21 @@ document.addEventListener("click", ()=>{
     renderer.domElement.requestPointerLock();
 })
 
-document.addEventListener("mousemove", (event) => {
-    mouseX-=event.movementX*0.005;
-    mouseY-=event.movementY*0.005;
-    camera.rotation.x = mouseY / scale;
-    camera.rotation.y = mouseX / scale;
+let MOUSE = [];
 
+document.addEventListener("mousemove", (event) => {
+    mouseX-=(event.movementX)*SENSITIVITY;
+    //camera.rotation.y = mouseX / scale;
+    mouseY-=(event.movementY)*SENSITIVITY;
+    //camera.rotation.x = (mouseY) / scale;
+    if(mouseY>Math.PI/2){
+        mouseY+=event.movementY*SENSITIVITY;
+    }else if(mouseY<-Math.PI/2){
+        mouseY+=event.movementY*SENSITIVITY;
+    }
+    
+    MOUSE[1]=mouseY;
+    MOUSE[0]=mouseX;
 })
 
 const KEYS = [];
@@ -193,7 +212,16 @@ function gameLoop() {
             camera.position.y -= SPEED;
             alt = camera.position.y;
         }
-
+        // if(MOUSE[1]>Math.PI/2){
+        //     camera.rotation.x=Math.PI/2;
+            
+        // }else if(MOUSE[1]<-Math.PI/2){
+        //     camera.rotation.x=-Math.PI/2;
+        // }else{
+            
+        // }
+        camera.rotation.x = MOUSE[1] / scale;
+        camera.rotation.y = MOUSE[0] / scale;
 
         animate();
     }
