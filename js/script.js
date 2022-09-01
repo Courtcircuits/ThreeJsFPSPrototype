@@ -74,10 +74,7 @@ scene.add(camera);
 scene.background = new THREE.Color(0xDA667B);
 
 
-function animate() {
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
-}
+
 
 const SENSITIVITY = 0.005;
 let mouseX = 0;
@@ -177,7 +174,6 @@ document.addEventListener("keyup", (event) => {
     }
 })
 
-const gameLoopHandler = setInterval(gameLoop, 24);
 
 const SPEED = 0.1;
 
@@ -212,18 +208,26 @@ function gameLoop() {
             camera.position.y -= SPEED;
             alt = camera.position.y;
         }
-        // if(MOUSE[1]>Math.PI/2){
-        //     camera.rotation.x=Math.PI/2;
-            
-        // }else if(MOUSE[1]<-Math.PI/2){
-        //     camera.rotation.x=-Math.PI/2;
-        // }else{
-            
-        // }
+        
         camera.rotation.x = MOUSE[1] / scale;
         camera.rotation.y = MOUSE[0] / scale;
 
-        animate();
+        
     }
 
 }
+
+let now;
+const fps = 60;
+let then = Date.now();
+const animate = ()=>{
+    now = Date.now();
+    let difference = now-then;
+    if(difference>1000/fps){
+        then=now;
+        gameLoop();
+        renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+}
+animate();
