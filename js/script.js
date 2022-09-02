@@ -45,13 +45,14 @@ const directionalLight = new THREE.DirectionalLight(color, 1);
 scene.add(directionalLight);
 directionalLight.position.set(1,4,2);
 
-const width = 9;  // ui: width
-const height = 9;  // ui: height
+const width = 90;  // ui: width
+const height = 90;  // ui: height
 const solGeom = new THREE.PlaneGeometry(width, height);
 const sol = new THREE.Mesh(solGeom, materialWithoutLight);
 
 sol.position.set(0, -1, 0);
-sol.rotation.x = 1.5;
+
+sol.rotation.x = Math.PI/2;
 scene.add(sol);
 
 
@@ -60,12 +61,8 @@ scene.add(sol);
 
 scene.background = new THREE.Color(0xDA667B);
 
-const lootGeometry =new THREE.SphereGeometry( 0.2, 32, 16 );
-const lootMaterial = new THREE.MeshPhongMaterial( {color: 0x00ff00} );
-const loot = new THREE.Mesh(lootGeometry, lootMaterial );
 
-loot.position.set(2,-0.3,2);
-scene.add(loot);
+
 
 
 const raycaster = new THREE.Raycaster();
@@ -195,11 +192,12 @@ const armMaterial = new THREE.MeshPhongMaterial({color : 0xF5D3C8});
 
 let player = new Player(new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 1000), new THREE.Mesh(hudGeometry, hudMaterial), new THREE.Mesh(armGeometry, armMaterial),scene);
 
-player.loadAssets();
-scene.add(player.camera);
 
+
+const loot = new Loot(4,0,0);
 function initialization(){
-    
+    player.loadAssets(scene);
+    loot.loadAssets(scene);
 }
 
 function loop() {
@@ -233,6 +231,7 @@ function loop() {
         }
         
         player.rotateHead(MOUSEAXIS[1],MOUSEAXIS[0]);
+        loot.checkCollisions(player,scene);
     }
 
 }
