@@ -1,10 +1,12 @@
-# A Three.js FPS
-I have made this project to see how does three.js work. For the moment there is nothing interesting.
-The main purpose of this project is to implement most of the concepts present in three.js
-
-## Concepts implemented :
-* Mesh
-* Geometry -> Primitives (cube)
-* Materials/Textures
-* Camera
-* Game Loop, even though using a game loop system inside three.js would be more clever
+# Moteur de FPS \[Three.js\]
+Base de code pour créer un Doom Like dans son navigateur préféré
+## Concepts implémentés
+* Raycasting des tirs
+* Mouvements de camera
+* HUD
+## Concepts à implémenter
+* Detection de collisions avec le décor et le loot
+* Gravité
+* Création d'ennemis : 
+    * Encapsulation
+    * IA
