@@ -1,5 +1,5 @@
 ﻿const scene = new THREE.Scene(); //Ici on crée l'instance d'une scene 
-const camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 1000);
+//const camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 1000);
 /*
 camera est une camera qui va "observer" la scène
 Paramètres :
@@ -12,7 +12,7 @@ Paramètres :
 
 const renderer = new THREE.WebGLRenderer();
 
-const ratio = 5;
+const ratio = 1;
 
 renderer.setSize(window.innerWidth / ratio, window.innerHeight / ratio);
 
@@ -55,23 +55,20 @@ sol.rotation.x = 1.5;
 scene.add(sol);
 
 
-camera.position.set(0,0,2);
 
-const hudGeometry = new THREE.CircleGeometry(0.01,32);
-const hudMaterial = new THREE.MeshBasicMaterial({color : 0xFFCAB1});
-const hud = new THREE.Mesh(hudGeometry, hudMaterial);
 
-const armGeometry = new THREE.BoxGeometry(0.25,0.25,0.5);
-const armMaterial = new THREE.MeshPhongMaterial({color : 0xF5D3C8});
-const arm = new THREE.Mesh(armGeometry, armMaterial);
 
-camera.add(arm);
-camera.add(hud);
-hud.position.set(0,0,-1);
-arm.position.set(-0.5,-0.5,-0.4);
-arm.rotateZ(1);
-scene.add(camera);
 scene.background = new THREE.Color(0xDA667B);
+
+const lootGeometry =new THREE.SphereGeometry( 0.2, 32, 16 );
+const lootMaterial = new THREE.MeshPhongMaterial( {color: 0x00ff00} );
+const loot = new THREE.Mesh(lootGeometry, lootMaterial );
+
+loot.position.set(2,-0.3,2);
+scene.add(loot);
+
+
+const raycaster = new THREE.Raycaster();
 
 
 
@@ -81,14 +78,29 @@ let mouseX = 0;
 let mouseY = 0;
 let scale = 1;
 let compensation = 0;
+let isPointerLock = false;
+const MOUSECLICK =[false,false];
+let click=false;
 
-camera.rotation.order = "YXZ";
-
-document.addEventListener("click", ()=>{
+document.addEventListener("mousedown", (event)=>{
     renderer.domElement.requestPointerLock();
+    
+    if(!isPointerLock){
+        isPointerLock = true;
+    }else{
+        if(event.buttons==1){
+            MOUSECLICK[0]=true;
+        }else if(event.buttons==2){
+            MOUSECLICK[1]=true;
+        }
+    }
+})
+document.addEventListener("mouseup",()=>{
+    if(MOUSECLICK[0])MOUSECLICK[0]=false;
+    if(MOUSECLICK[1])MOUSECLICK[1]=false;
 })
 
-let MOUSE = [];
+let MOUSEAXIS = [];
 
 document.addEventListener("mousemove", (event) => {
     mouseX-=(event.movementX)*SENSITIVITY;
@@ -101,8 +113,8 @@ document.addEventListener("mousemove", (event) => {
         mouseY+=event.movementY*SENSITIVITY;
     }
     
-    MOUSE[1]=mouseY;
-    MOUSE[0]=mouseX;
+    MOUSEAXIS[1]=mouseY;
+    MOUSEAXIS[0]=mouseX;
 })
 
 const KEYS = [];
@@ -175,59 +187,70 @@ document.addEventListener("keyup", (event) => {
 })
 
 
-const SPEED = 0.1;
+const hudGeometry = new THREE.CircleGeometry(0.002,32);
+const hudMaterial = new THREE.MeshBasicMaterial({color : 0xFFCAB1});
 
-let alt = 0;
+const armGeometry = new THREE.BoxGeometry(0.25,0.25,0.5);
+const armMaterial = new THREE.MeshPhongMaterial({color : 0xF5D3C8});
 
-function gameLoop() {
+let player = new Player(new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 1000), new THREE.Mesh(hudGeometry, hudMaterial), new THREE.Mesh(armGeometry, armMaterial),scene);
+
+player.loadAssets();
+scene.add(player.camera);
+
+function initialization(){
+    
+}
+
+function loop() {
     //console.log(KEYS);
     if (running) {
-        if (KEYS[0]) {
-            camera.translateZ(-SPEED);
-            camera.position.y = alt;
+        if (KEYS[0]) {//front
+            player.goFront();
         }
-        if (KEYS[1]) {
-            camera.translateZ(SPEED);
-            camera.translateY = 0;
-            camera.position.y = alt;
+        if (KEYS[1]) {//back
+            player.goBack();
         }
-        if (KEYS[2]) {
-            camera.translateX(-SPEED);
-            camera.position.y = alt;
+        if (KEYS[2]) {//left
+            player.goLeft();
         }
-        if (KEYS[3]) {
-            camera.translateX(SPEED);
-            camera.position.y = alt;
+        if (KEYS[3]) {//right
+            player.goRight();
         }
-        if (KEYS[4]) {
-
-            camera.position.y += SPEED;
-            alt = camera.position.y;
+        if (KEYS[4]) {//up
+            player.goUp();
         }
-        if (KEYS[5]) {
-            camera.position.y -= SPEED;
-            alt = camera.position.y;
+        if (KEYS[5]) {//down
+            player.goDown();
+        }
+        if(MOUSECLICK[0]){//here you manage click event
+            player.leftClicked();
+        }
+        if(MOUSECLICK[1]){
+            player.rightClicked();
+        }else{
+            player.notRightClicked();
         }
         
-        camera.rotation.x = MOUSE[1] / scale;
-        camera.rotation.y = MOUSE[0] / scale;
-
-        
+        player.rotateHead(MOUSEAXIS[1],MOUSEAXIS[0]);
     }
 
 }
 
 let now;
-const fps = 60;
+const fps = 180;
 let then = Date.now();
+
 const animate = ()=>{
     now = Date.now();
-    let difference = now-then;
-    if(difference>1000/fps){
+    let delta = now-then;
+    if(delta>1000/fps){
         then=now;
-        gameLoop();
-        renderer.render(scene, camera);
+        loop();
+        renderer.render(scene, player.camera);
     }
     requestAnimationFrame(animate);
 }
+
+initialization();
 animate();
