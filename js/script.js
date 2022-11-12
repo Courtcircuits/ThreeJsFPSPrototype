@@ -24,16 +24,13 @@ document.body.appendChild(renderer.domElement);//Permet de visualiser le rendu s
 
 
 
-const geometry = new THREE.BoxGeometry(3, 2, 2);//crée l'objet
+
 const material = new THREE.MeshPhongMaterial({color: 0x53687E}); //Lui ajoute un material
 const materialWithoutLight = new THREE.MeshPhongMaterial({color: 0x53687E, side: THREE.DoubleSide}); //Lui ajoute un material
 
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+const wall = new Wall(1,5,20,10,1.5,3,scene);
 
-const cube2 = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), material);
-scene.add(cube2);
-cube2.position.set(2,4,3);
+const walls = [wall];
 
 const color = 0x404040;
 const intensity = 2;
@@ -45,30 +42,20 @@ const directionalLight = new THREE.DirectionalLight(color, 1);
 scene.add(directionalLight);
 directionalLight.position.set(1,4,2);
 
-const width = 90;  // ui: width
-const height = 90;  // ui: height
-const solGeom = new THREE.PlaneGeometry(width, height);
-const sol = new THREE.Mesh(solGeom, materialWithoutLight);
+// const width = 90;  // ui: width
+// const height = 90;  // ui: height
+// const solGeom = new THREE.PlaneGeometry(width, height);
+// const sol = new THREE.Mesh(solGeom, materialWithoutLight);
 
-sol.position.set(0, -1, 0);
+// sol.position.set(0, -1, 0);
 
-sol.rotation.x = Math.PI/2;
-scene.add(sol);
+// sol.rotation.x = -Math.PI/2;
 
+const floor = new Floor(90,90,scene);
 
-
-
+// scene.add(sol);
 
 scene.background = new THREE.Color(0xDA667B);
-
-
-
-
-
-const raycaster = new THREE.Raycaster();
-
-
-
 
 const SENSITIVITY = 0.005;
 let mouseX = 0;
@@ -85,9 +72,9 @@ document.addEventListener("mousedown", (event)=>{
     if(!isPointerLock){
         isPointerLock = true;
     }else{
-        if(event.buttons==1){
+        if(event.buttons===1){
             MOUSECLICK[0]=true;
-        }else if(event.buttons==2){
+        }else if(event.buttons===2){
             MOUSECLICK[1]=true;
         }
     }
@@ -117,7 +104,6 @@ document.addEventListener("mousemove", (event) => {
 const KEYS = [];
 
 document.addEventListener("keydown", (event) => {
-    //console.log(event);
     switch (event.key) {
         case "z":
             KEYS[0] = true;
@@ -193,11 +179,11 @@ const armMaterial = new THREE.MeshPhongMaterial({color : 0xF5D3C8});
 let player = new Player(new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 1000), new THREE.Mesh(hudGeometry, hudMaterial), new THREE.Mesh(armGeometry, armMaterial),scene);
 
 
+const lootList = [new Loot(0,0,4,scene),new Loot(3,0,9,scene)];
 
-const loot = new Loot(4,0,0);
+
 function initialization(){
     player.loadAssets(scene);
-    loot.loadAssets(scene);
 }
 
 function loop() {
@@ -231,7 +217,9 @@ function loop() {
         }
         
         player.rotateHead(MOUSEAXIS[1],MOUSEAXIS[0]);
-        loot.checkCollisions(player,scene);
+
+
+        
     }
 
 }

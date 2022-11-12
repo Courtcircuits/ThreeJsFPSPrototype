@@ -5,5 +5,11 @@
 }
 
 canvas{
+    position: relative;
+    z-index:1;
     width:100%;
+}
+#score{
+    position: absolute;
+    z-index: 2;
 }
